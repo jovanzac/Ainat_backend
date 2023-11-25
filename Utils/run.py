@@ -23,7 +23,7 @@ if __name__ == "__main__" :
     # lstm.train_model(X_train, y_train, "./action2.h5")
     
     # Load saved model
-    model = lstm.load_lstm_model("./action.h5")
+    # model = lstm.load_lstm_model("./action.h5")
     
     # Perform prediction on video
-    estimator.predict_from_video(model)
+    estimator.predict_from_video("./vids/drowning/5.mp4")

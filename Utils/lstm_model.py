@@ -10,7 +10,7 @@ from tensorflow.keras.utils import to_categorical
 
 from sklearn.model_selection import train_test_split
 
-from support_functions import SupportFunctions
+from Utils.support_functions import SupportFunctions
 
 class LSTMModel :
     def __init__(self, *args, **kwargs) :

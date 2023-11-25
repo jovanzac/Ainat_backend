@@ -4,10 +4,12 @@ import tensorflow_hub as hub
 import matplotlib.pyplot as plt
 import numpy as np
 import os
-import math
 
-from lstm_model import LSTMModel
-from support_functions import SupportFunctions
+import asyncio
+import websockets
+
+from Utils.lstm_model import LSTMModel
+from Utils.support_functions import SupportFunctions
 
 
 class VideoPoseEstimation :
@@ -172,16 +174,33 @@ class VideoPoseEstimation :
         return output_frame
         
         
-    def predict_from_video(self, model, vid="./vids/drowning/5.mp4") :
+    async def client(self, mssg) :
+            uri = "ws://0.tcp.in.ngrok.io:12672"
+            async with websockets.connect(uri) as websocket :
+                
+                await websocket.send(mssg)  #str(res["probability"])
+                print(f"Client sent: {mssg}")
+                # estimator.predict_from_video("./vids/drowning/5.mp4", func)
+                
+                server_res = await websocket.recv()
+                print(f"Client received: {server_res}")
+        
+        
+    def predict_from_video(self, vid=None, emit_func=False) :
         # 1. New detection variables
         sequence = []
         sentence = []
         predictions = []
         threshold = 0.5
+        model = lstm.load_lstm_model("action.h5")
 
-        cap = cv2.VideoCapture(vid)
+        if vid :
+            cap = cv2.VideoCapture(vid)
+        else :
+            cap = cv2.VideoCapture(vid)
         # Set mediapipe model 
         while cap.isOpened():
+            print("READING FRAMES")
             # Read feed
             ret, frame = cap.read()
             if ret :
@@ -226,6 +245,9 @@ class VideoPoseEstimation :
 
                 # Viz probabilities
                 frame = self.prob_viz(res, support.actions, frame, self.viz_colors)
+                
+                if emit_func==True :
+                    asyncio.run(self.client(str(100 * res[0])))
 
             cv2.rectangle(frame, (0,0), (640, 40), (245, 117, 16), -1)
             cv2.putText(frame, ' '.join(sentence), (3,30), 
